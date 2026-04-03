@@ -4,6 +4,7 @@
 """
 
 import asyncio
+import json
 import logging
 import os
 
@@ -42,7 +43,9 @@ _HELP_TEXT = """안녕하세요! 현웅봇입니다 🔭
 
 @app.post("/webhook")
 async def webhook(request: Request) -> JSONResponse:
-    body = await request.json()
+    # 한글 인코딩 문제 해결: raw body를 UTF-8로 명시적 디코딩
+    raw_body = await request.body()
+    body = json.loads(raw_body.decode('utf-8'))
     utterance = parse_utterance(body)
     user_id = parse_user_id(body)
 
