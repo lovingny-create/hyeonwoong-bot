@@ -1,0 +1,41 @@
+# 환경 변수 (API 키 포함 - 절대 커밋 금지)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# 가상환경
+venv/
+env/
+.venv/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 로그
+*.log
+logs/
+
+# 테스트 캐시
+.pytest_cache/
+.coverage
+htmlcov/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
