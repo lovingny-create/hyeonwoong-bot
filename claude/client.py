@@ -15,7 +15,7 @@ from claude.system_prompt import SYSTEM_PROMPT
 
 _client = anthropic.Anthropic(
     api_key=os.environ.get("ANTHROPIC_API_KEY"),
-    timeout=httpx.Timeout(4.0, connect=2.0),
+    timeout=httpx.Timeout(5.0, connect=2.0),
 )
 
 
