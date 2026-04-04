@@ -19,6 +19,32 @@ def build_simple_text_response(text: str) -> dict:
     }
 
 
+def build_carousel_response(cards: list) -> dict:
+    """BasicCard 카루셀 응답. 각 카드에 Simbad 웹링크 버튼 포함."""
+    items = []
+    for card in cards[:10]:  # 카카오톡 카루셀 최대 10장
+        item = {
+            "title": card["title"],
+            "description": card["description"],
+        }
+        if card.get("buttons"):
+            item["buttons"] = card["buttons"]
+        items.append(item)
+    return {
+        "version": "2.0",
+        "template": {
+            "outputs": [
+                {
+                    "carousel": {
+                        "type": "basicCard",
+                        "items": items,
+                    }
+                }
+            ]
+        },
+    }
+
+
 def build_list_card_response(title: str, items: list[dict], buttons: list[dict] | None = None) -> dict:
     """
     리스트 카드 응답.

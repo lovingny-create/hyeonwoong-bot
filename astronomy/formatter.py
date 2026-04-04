@@ -122,6 +122,104 @@ def format_target_list(fixed: list, solar: list, variable=None) -> str:
     return "\n".join(lines)
 
 
+def _simbad_url(name: str) -> str:
+    """천체 이름으로 Simbad 검색 URL 생성."""
+    encoded = name.replace(" ", "+")
+    return f"https://simbad.u-strasbg.fr/simbad/sim-basic?Ident={encoded}"
+
+
+def _card_description_star(t: dict) -> str:
+    """항성 카드 설명 텍스트."""
+    parts = [t.get("type", "")]
+    if t.get("mag_range"):
+        parts.append(f"{t['mag_range']}등급")
+        if t.get("period_str"):
+            parts.append(f"주기 {t['period_str']}")
+    elif t.get("mag") is not None:
+        parts.append(f"{t['mag']:.1f}등급")
+    parts.append(f"고도 {t['altitude']:.0f}° / {t['direction']}쪽")
+    return "\n".join(parts)
+
+
+def _card_description_dso(t: dict) -> str:
+    """딥스카이 카드 설명 텍스트."""
+    parts = [t.get("type", "")]
+    if t.get("size_arcmin"):
+        parts[0] += f" / {t['size_arcmin']:.0f}'"
+    if t.get("mag") is not None:
+        parts.append(f"{t['mag']:.1f}등급")
+    parts.append(f"고도 {t['altitude']:.0f}° / {t['direction']}쪽")
+    return "\n".join(parts)
+
+
+def _card_description_solar(t: dict) -> str:
+    """태양계 카드 설명 텍스트."""
+    return f"{t.get('type', '행성')}\n고도 {t['altitude']:.0f}° / {t['direction']}쪽"
+
+
+def format_target_cards(fixed: list, solar: list, variable=None) -> list:
+    """관측 대상을 BasicCard 카루셀용 카드 리스트로 변환. Simbad URL 포함."""
+    if variable is None:
+        variable = []
+
+    for t in solar:
+        t.setdefault("category", "태양계")
+    for t in variable:
+        t.setdefault("category", "항성")
+
+    all_targets = solar + variable + fixed
+
+    if not all_targets:
+        return []
+
+    # 카테고리별 그룹화 + 정렬
+    groups = {cat: [] for cat in _CATEGORY_ORDER}
+    for t in all_targets:
+        cat = t.get("category", "성운·성단")
+        if cat in groups:
+            groups[cat].append(t)
+
+    cards = []
+    for cat in _CATEGORY_ORDER:
+        items = groups[cat]
+        if not items:
+            continue
+        limit = 2 if cat in ("태양계", "항성") else 3
+        items = sorted(items, key=lambda x: x.get("altitude", 0), reverse=True)[:limit]
+
+        for t in items:
+            emoji = _CATEGORY_EMOJI.get(cat, "")
+            name = t.get("name", "")
+            label = t.get("label", "")
+
+            if cat == "태양계":
+                title = f"{emoji} {label} ({name})"
+                desc = _card_description_solar(t)
+            elif cat == "항성":
+                title = f"{emoji} {name}"
+                if label:
+                    title += f" - {label}"
+                desc = _card_description_star(t)
+            else:
+                title = f"{emoji} {name} - {label}"
+                desc = _card_description_dso(t)
+
+            card = {
+                "title": title,
+                "description": desc,
+                "buttons": [
+                    {
+                        "action": "webLink",
+                        "label": "Simbad 검색",
+                        "webLinkUrl": _simbad_url(name),
+                    }
+                ],
+            }
+            cards.append(card)
+
+    return cards
+
+
 def format_no_night() -> str:
     return (
         "현재 천문박명 전(또는 낮)이라 관측이 어렵습니다.\n\n"

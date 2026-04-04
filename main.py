@@ -55,25 +55,28 @@ async def webhook(request: Request) -> JSONResponse:
         return JSONResponse(build_simple_text_response(_HELP_TEXT))
 
     # 도움말 요청
-    if utterance in ("도움말", "help", "Help", "시작", "안녕", "안녕하세요"):
+    if utterance in ("도움말", "help", "Help", "시작", "안녕", "안녕하세요", "안냥", "hi", "Hi", "hello"):
         return JSONResponse(build_simple_text_response(_HELP_TEXT))
 
     intent = classify_intent(utterance)
     logger.info(f"intent={intent.value}")
 
     try:
-        text = await asyncio.wait_for(
+        result = await asyncio.wait_for(
             dispatch(intent, utterance),
             timeout=4.8,
         )
     except asyncio.TimeoutError:
         logger.warning(f"Timeout for utterance: {utterance[:50]}")
-        text = _TIMEOUT_MSG
+        result = _TIMEOUT_MSG
     except Exception as e:
         logger.error(f"Error: {e}", exc_info=True)
-        text = f"처리 중 오류가 발생했습니다.\n오류: {str(e)[:100]}"
+        result = f"처리 중 오류가 발생했습니다.\n오류: {str(e)[:100]}"
 
-    return JSONResponse(build_simple_text_response(text))
+    # dict → 이미 카카오 JSON 응답 (카루셀 등), str → simpleText로 감싸기
+    if isinstance(result, dict):
+        return JSONResponse(result)
+    return JSONResponse(build_simple_text_response(result))
 
 
 @app.get("/health")
