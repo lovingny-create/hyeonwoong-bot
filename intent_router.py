@@ -39,10 +39,14 @@ def classify_intent(utterance: str) -> Intent:
 
 
 async def dispatch(intent: Intent, utterance: str) -> str:
+    from features.qa_handler import handle as qa_handle
+
     if intent == Intent.TARGET_RECOMMEND:
-        from features.target_recommender import handle
-    elif intent == Intent.FOV_CALC:
-        from features.fov_calculator import handle
+        # 천문 계산 결과를 컨텍스트로 포함해서 Claude가 답변
+        from features.target_recommender import get_observation_summary
+        obs_summary = await get_observation_summary()
+        context = f"[현재 관측 가능한 천체 목록]\n{obs_summary}\n\n사용자 질문: {utterance}"
+        return await qa_handle(context)
     else:
-        from features.qa_handler import handle
-    return await handle(utterance)
+        # FOV_CALC, QA 모두 Claude로 처리
+        return await qa_handle(utterance)

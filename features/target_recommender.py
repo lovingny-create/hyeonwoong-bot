@@ -26,3 +26,33 @@ async def handle(utterance: str):
 
     # 관측 가능한 천체 없으면 텍스트 응답
     return format_target_list(fixed=fixed, solar=solar, variable=variable)
+
+
+async def get_observation_summary() -> str:
+    """현재 관측 가능한 천체 목록을 텍스트로 반환 (Claude에 전달할 컨텍스트용)."""
+    solar    = get_visible_solar_system(n_results=2)
+    fixed    = get_visible_fixed_targets(n_results=6)
+    variable = await get_visible_variable_stars(n_results=3)
+
+    # 관측 목록 텍스트 생성
+    lines = []
+
+    if solar:
+        lines.append("[태양계 천체]")
+        for t in solar:
+            lines.append(f"- {t.get('label', t['name'])}: 고도 {t['altitude']:.0f}°")
+
+    if variable:
+        lines.append("[변광성]")
+        for t in variable:
+            lines.append(f"- {t['name']}: 고도 {t['altitude']:.0f}°")
+
+    if fixed:
+        lines.append("[고정 카탈로그 천체]")
+        for t in fixed:
+            lines.append(f"- {t['name']}: 고도 {t['altitude']:.0f}°")
+
+    if not lines:
+        return "현재 관측 가능한 천체가 없습니다."
+
+    return "\n".join(lines)
