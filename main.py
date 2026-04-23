@@ -18,12 +18,17 @@ load_dotenv()
 from intent_router import classify_intent, dispatch
 from kakao.request_parser import parse_utterance, parse_user_id
 from kakao.response_builder import build_simple_text_response
+from claude.rag_loader import load_pdf_to_db
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# 서버 시작 시 RAG 데이터베이스 로드
+logger.info("Loading PDF manuals into RAG database...")
+load_pdf_to_db()
 
 app = FastAPI(title="현웅봇", description="광주과학고 천문 관측 도우미")
 

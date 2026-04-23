@@ -1,6 +1,7 @@
 """
 Claude API 시스템 프롬프트.
-광주과학고 CDK14 망원경 컨텍스트 및 PDF 매뉴얼을 포함.
+광주과학고 CDK14 망원경 컨텍스트를 포함.
+매뉴얼은 RAG(벡터 검색)를 통해 동적으로 추가됨.
 """
 
 from config import (
@@ -9,9 +10,6 @@ from config import (
     PLATE_SCALE_ARCSEC_PX, FOV_W_ARCMIN, FOV_H_ARCMIN,
     FILTERS,
 )
-from claude.manual_loader import load_manuals
-
-_MANUAL_SECTION = load_manuals()
 
 SYSTEM_PROMPT = f"""당신은 광주과학고등학교 천문 관측 도우미 '현웅봇'입니다.
 학교 관측 장비를 바탕으로 학생들의 천체 관측을 도와주세요.
@@ -49,7 +47,5 @@ SYSTEM_PROMPT = f"""당신은 광주과학고등학교 천문 관측 도우미 '
 5. 수식이나 표 대신 자연스러운 한국어 문장을 사용하세요.
 6. 모르는 내용은 솔직하게 모른다고 말하세요.
 7. 구체적인 날짜/시간이 없으면, 광주 기준 밤 시간(예: 21시)으로 가정하고 답변하세요.
-
-## 장비 매뉴얼 및 참고 자료
-{_MANUAL_SECTION if _MANUAL_SECTION else "현재 로드된 매뉴얼이 없습니다. manuals/ 폴더에 PDF 파일을 추가하면 자동으로 학습됩니다."}
+8. 아래에 제공된 매뉴얼 내용을 참고하여 답변하세요.
 """

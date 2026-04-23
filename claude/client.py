@@ -19,15 +19,25 @@ _client = anthropic.Anthropic(
 )
 
 
-async def ask_claude(user_message: str) -> str:
-    """Claude API에 비동기로 질문하고 응답 텍스트 반환."""
+async def ask_claude(user_message: str, manual_context: str = "") -> str:
+    """Claude API에 비동기로 질문하고 응답 텍스트 반환.
+
+    Args:
+        user_message: 사용자 질문
+        manual_context: RAG로 검색된 매뉴얼 컨텍스트 (선택)
+    """
+    # 시스템 프롬프트에 매뉴얼 컨텍스트 추가
+    system_with_context = SYSTEM_PROMPT
+    if manual_context:
+        system_with_context += f"\n\n{manual_context}"
+
     loop = asyncio.get_event_loop()
     response = await loop.run_in_executor(
         None,
         lambda: _client.messages.create(
             model=CLAUDE_MODEL,
             max_tokens=CLAUDE_MAX_TOKENS,
-            system=SYSTEM_PROMPT,
+            system=system_with_context,
             messages=[{"role": "user", "content": user_message}],
         ),
     )
