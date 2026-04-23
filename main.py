@@ -64,7 +64,7 @@ async def webhook(request: Request) -> JSONResponse:
     try:
         result = await asyncio.wait_for(
             dispatch(intent, utterance),
-            timeout=4.8,
+            timeout=7.0,
         )
     except asyncio.TimeoutError:
         logger.warning(f"Timeout for utterance: {utterance[:50]}")
