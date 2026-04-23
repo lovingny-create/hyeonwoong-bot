@@ -50,5 +50,5 @@ MIN_ALTITUDE_DEG = 30.0      # 최소 고도 (°)
 LIMITING_MAG = 13.0          # 추천 한계등급
 
 # ─── Claude API ───────────────────────────────────────────
-CLAUDE_MODEL = "claude-haiku-4-5"   # 응답 속도 우선
+CLAUDE_MODEL = "claude-3-5-haiku-20241022"   # 응답 속도 우선
 CLAUDE_MAX_TOKENS = 512
