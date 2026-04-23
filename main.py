@@ -7,10 +7,11 @@ import asyncio
 import json
 import logging
 import os
+import pathlib
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 
 load_dotenv()
 
@@ -77,6 +78,40 @@ async def webhook(request: Request) -> JSONResponse:
     if isinstance(result, dict):
         return JSONResponse(result)
     return JSONResponse(build_simple_text_response(result))
+
+
+@app.get("/")
+async def chat_page() -> HTMLResponse:
+    html = pathlib.Path("templates/chat.html").read_text(encoding="utf-8")
+    return HTMLResponse(content=html)
+
+
+@app.post("/chat")
+async def chat_api(request: Request) -> JSONResponse:
+    body = await request.json()
+    utterance = body.get("message", "").strip()
+
+    if not utterance:
+        return JSONResponse({"reply": "메시지를 입력해주세요."})
+
+    logger.info(f"web_chat: utterance={utterance[:50]}")
+
+    try:
+        intent = classify_intent(utterance)
+        result = await asyncio.wait_for(
+            dispatch(intent, utterance),
+            timeout=30.0,
+        )
+    except asyncio.TimeoutError:
+        logger.warning(f"Web chat timeout: {utterance[:50]}")
+        result = "응답 시간이 초과되었습니다. 다시 시도해 주세요."
+    except Exception as e:
+        logger.error(f"Web chat error: {e}", exc_info=True)
+        result = f"오류가 발생했습니다: {str(e)[:100]}"
+
+    if isinstance(result, dict):
+        result = str(result)
+    return JSONResponse({"reply": result})
 
 
 @app.get("/health")
