@@ -128,4 +128,6 @@ if __name__ == "__main__":
     import uvicorn
     host = os.environ.get("HOST", "0.0.0.0")
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host=host, port=port, reload=True)
+    # Production 환경에서는 reload 비활성화 (파일 감시로 인한 자동 재시작 방지)
+    reload = os.environ.get("ENVIRONMENT") != "production"
+    uvicorn.run("main:app", host=host, port=port, reload=reload)
