@@ -7,6 +7,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# CPU-only PyTorch 먼저 설치 (sentence-transformers 설치 전)
+# GPU 버전 ~4GB vs CPU-only ~250MB
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
 # 파이썬 의존성 설치
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
